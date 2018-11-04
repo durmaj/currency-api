@@ -43,6 +43,11 @@ class Currency
      */
     private $histories;
 
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $updated;
+
     public function __construct()
     {
         $this->histories = new ArrayCollection();
@@ -128,6 +133,18 @@ class Currency
                 $history->setCurrency(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUpdated(): ?\DateTimeInterface
+    {
+        return $this->updated;
+    }
+
+    public function setUpdated(\DateTimeInterface $updated): self
+    {
+        $this->updated = $updated;
 
         return $this;
     }
