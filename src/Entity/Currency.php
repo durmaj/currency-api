@@ -48,6 +48,11 @@ class Currency
      */
     private $updated;
 
+    /**
+     * @ORM\Column(type="string", length=3)
+     */
+    private $nbpTable;
+
     public function __construct()
     {
         $this->histories = new ArrayCollection();
@@ -145,6 +150,18 @@ class Currency
     public function setUpdated(\DateTimeInterface $updated): self
     {
         $this->updated = $updated;
+
+        return $this;
+    }
+
+    public function getNbpTable(): ?string
+    {
+        return $this->nbpTable;
+    }
+
+    public function setNbpTable(string $nbpTable): self
+    {
+        $this->nbpTable = $nbpTable;
 
         return $this;
     }

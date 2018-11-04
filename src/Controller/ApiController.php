@@ -13,7 +13,8 @@ class ApiController extends AbstractController
      */
     public function list(RatesFetcher $rates)
     {
-        $curr = $rates->getRates();
+        $curr = $rates->updateFromNbp();
+//        $checker = $rates->checkUpdates();
         
         return $this->json([
             'message' => 'Welcome to your new controller!',
