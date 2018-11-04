@@ -28,7 +28,6 @@ class CurrencyRepository extends ServiceEntityRepository
             ->andWhere('c.nbpTable = :val')
             ->setParameter('val', $value)
             ->orderBy('c.id', 'ASC')
-//            ->setMaxResults(10)
             ->getQuery()
             ->getResult()
         ;
