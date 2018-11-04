@@ -23,35 +23,41 @@ class RatesFetcher
 
     public function updateFromNbp()
     {
+        
+        $tables = ['a', 'b'];
+        
+        foreach($tables as $table)
+        { 
+        //getting json from NBP & decoding
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_URL, 'http://api.nbp.pl/api/exchangerates/tables/'.$table.'/');
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            $resp = curl_exec($curl);
+            curl_close($curl);
 
-               
-    //getting json from NBP & decoding
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, 'http://api.nbp.pl/api/exchangerates/tables/a/');
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        $resp = curl_exec($curl);
-        curl_close($curl);
-        
-        $result = json_decode($resp);
-        
-        $nbpTable = null;
-        $nbpDate = null;      
-                
-        foreach ($result as $res => $value)
-        {
-            $nbpTable = $value->table;
-            $nbpDate = new \DateTime($value->effectiveDate);
-            
-        //checkUpdates - checking if there are newer currency tables at nbp         
-            $up = $this->checkUpdates($nbpTable, $nbpDate);
-            if ($up)
+            $result = json_decode($resp);
+
+            $nbpTable = null;
+            $nbpDate = null;      
+
+            foreach ($result as $res => $value)
             {
-            //if there are tables to update, proceed with updating
-                $currencies = $value->rates;
-                $this->saveToDb($currencies, $nbpDate, $nbpTable);
+                $nbpTable = $value->table;
+                $nbpDate = new \DateTime($value->effectiveDate);
+
+            //checkUpdates - checking if there are newer currency tables at nbp         
+                $up = $this->checkUpdates($nbpTable, $nbpDate);
+                if ($up)
+                {
+                //if there are tables to update, proceed with updating
+                    $currencies = $value->rates;
+                    $this->saveToDb($currencies, $nbpDate, $nbpTable);
+                }
+
             }
-         
-        }
+            
+        };
+ 
         
         return true;
     }
