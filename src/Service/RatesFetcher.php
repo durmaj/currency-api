@@ -45,26 +45,12 @@ class RatesFetcher
             $up = $this->checkUpdates($nbpTable, $nbpDate);
             if ($up)
             {
-
-                foreach ($value->rates as $entry)
-                {
-
-                  //create currency entities & save to DB
-                   $currency = new Currency();
-                   $currency->setName($entry->currency);
-                   $currency->setCode($entry->code);
-                   $currency->setRate($entry->mid);
-                   $currency->setDate($nbpDate);
-                   $currency->setUpdated(new \DateTime);
-                   $currency->setNbpTable($nbpTable);
-
-                   $this->entityManager->persist($currency);
-                   $this->entityManager->flush();
-                };
+            //if there are tables to update, proceed with updating
+                $currencies = $value->rates;
+                $this->saveToDb($currencies, $nbpDate, $nbpTable);
             }
          
         }
-
         
         return 'ok';
     }
@@ -73,18 +59,53 @@ class RatesFetcher
     {
         
         $saved = $this->currencyRepo->findByTable($table);
-
-        if ($saved[0]->getDate() != $date)
+        
+        if (!empty($saved))
         {
-            return true;
+            $tmp = $saved[0]->getDate();
+            
+            if ($tmp == $date)
+            {
+                return false;
+            }
         }
         
-        return false;
+        return true;
     }
     
-    public function saveToDb()
+    public function saveToDb($currencies, $nbpDate, $nbpTable)
     {
-        
+        foreach ($currencies as $entry)
+        {
+            
+           if ($this->currencyRepo->findOneByCode($entry->code))
+           {
+        // update existing currency
+                $currency = $this->currencyRepo->findOneByCode($entry->code);
+               
+                $currency->setRate($entry->mid);
+                $currency->setDate($nbpDate);
+                $currency->setUpdated(new \DateTime); 
+                
+                $this->entityManager->persist($currency);
+                $this->entityManager->flush();
+                
+           } else {
+        //create new currency & save to DB
+           $currency = new Currency();
+           $currency->setName($entry->currency);
+           $currency->setCode($entry->code);
+           $currency->setRate($entry->mid);
+           $currency->setDate($nbpDate);
+           $currency->setUpdated(new \DateTime);
+           $currency->setNbpTable($nbpTable);
+
+           $this->entityManager->persist($currency);
+           $this->entityManager->flush();
+           }
+
+        };
+        return true;
     }
     
 }
