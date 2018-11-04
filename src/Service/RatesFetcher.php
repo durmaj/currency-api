@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Currency;
+use App\Entity\History;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\CurrencyRepository;
 
@@ -52,7 +53,7 @@ class RatesFetcher
          
         }
         
-        return 'ok';
+        return true;
     }
     
     public function checkUpdates($table, $date)
@@ -66,11 +67,11 @@ class RatesFetcher
             
             if ($tmp == $date)
             {
-                return false;
+                return false; //no need to update
             }
         }
         
-        return true;
+        return true; //updates can be made
     }
     
     public function saveToDb($currencies, $nbpDate, $nbpTable)
@@ -80,9 +81,17 @@ class RatesFetcher
             
            if ($this->currencyRepo->findOneByCode($entry->code))
            {
-        // update existing currency
+        
                 $currency = $this->currencyRepo->findOneByCode($entry->code);
-               
+            //log current entry to history    
+                $history = new History();
+                $history->setCurrency($currency);
+                $history->setRate($currency->getRate());
+                $history->setDate($currency->getDate());
+                
+                $this->entityManager->persist($history);
+
+            // update existing currency   
                 $currency->setRate($entry->mid);
                 $currency->setDate($nbpDate);
                 $currency->setUpdated(new \DateTime); 
